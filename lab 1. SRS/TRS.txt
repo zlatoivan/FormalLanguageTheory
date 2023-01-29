@@ -1,0 +1,3 @@
+a(b(c(d(x)))) = e(f(h(x)))
+c(e(f(x))) = d(a(b(x)))
+d(e(a(d(x)))) = b(a(d(x)))
