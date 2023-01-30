@@ -245,10 +245,9 @@ def del_eps(rules):
                                     i += 1
                                 if nterm == e:
                                     if skip != 0:
-                                        new_body += "[" + nterm + "]"
-                                    else:
-                                        modified = True
-                                        seen += 1
+                                        print("Не LL(k)")
+                                        print_rules(out)
+                                        exit()
                                     skip -= 1
                                 else:
                                     new_body += "[" + nterm + "]"
