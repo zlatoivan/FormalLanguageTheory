@@ -188,9 +188,9 @@ def compare(left, right):
         if s.power > min:
             min = s.power
             coeff = s.coeff
-    if s.coeff < 0:
-        return True
-    return False
+    if coeff < 0:
+        return False
+    return True
 
 def get_parts(value, inter):
     for i in inter:
