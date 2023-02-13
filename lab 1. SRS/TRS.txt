@@ -1,1 +1,3 @@
-f(x) = g(x)
+h(f(x)) = g(x)
+g(g(x)) = f(f(x))
+h(h(x)) = k(x)
