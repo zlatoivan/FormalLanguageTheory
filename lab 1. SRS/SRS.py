@@ -185,7 +185,7 @@ def compare(left, right):
     min = 0
     coeff = 0
     for s in sub:
-        if s.power > min:
+        if s.power > min and s.coeff != 0:
             min = s.power
             coeff = s.coeff
     if coeff < 0:
