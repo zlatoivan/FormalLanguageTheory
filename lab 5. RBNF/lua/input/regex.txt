@@ -1,0 +1,2 @@
+Nonterminal ::= [A-Z|0|1][A-z]*
+Terminal ::= [a-z]*

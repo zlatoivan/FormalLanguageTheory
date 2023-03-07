@@ -1,0 +1,5 @@
+nonTerminalStart = "["
+nonTerminalEnd = "]"
+arrow = "->"
+alternative = "|"
+epsilon = "$"

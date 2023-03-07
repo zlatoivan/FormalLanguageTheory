@@ -1,0 +1,405 @@
+\documentclass[12pt]{article}
+
+\usepackage[english, russian]{babel}  % пакет для работы с языками
+\usepackage[T2A]{fontenc}  % кодировка шрифта
+\usepackage[utf8]{inputenc}  % кодировка русских букв
+
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry} % формат страницы
+\usepackage{enumitem}  % для компактных списков
+\usepackage{listings}  % чтоб выводить строк 1 в 1
+
+
+\title{Лабораторная работа №5\\"РБНФ в грамматику" (Вариант 5)\\по курсу Теория Формальных Языков}
+\author{Златовратский Иван}
+\date{Март 2022}
+
+\begin{document}
+    \maketitle
+
+	\tableofcontents
+	\clearpage
+
+
+    \section{Условие лабораторной работы}
+
+
+    \subsection{Базовое условие}
+    \begin{enumerate}
+        \item Необходимо предложить грамматику описания РБНФ.
+        \item Параметризованными токенами грамматики могут выступать, например:
+        \begin{itemize}
+            \item символы начала и конца нетерминала, а также начала и конца итерации, опционального вхождения и альтернативы;
+            \item символы разделения левой и правой части правила и правил друг от друга;
+            \item способ объявления стартового нетерминала и обозначение для $\varepsilon$.
+        \end{itemize}
+        \item Из входа читается описание РБНФ в заданном синтаксисе.
+        \item Требуется построить классическую КС-грамматику, ему эквивалентную.
+        \item Имена для новых нетерминалов должны генерироваться так, чтобы был понятен их смысл, и откуда они берутся.
+    \end{enumerate}
+
+    \subsection{Дополнительные задания}
+    \begin{itemize}
+        \item (+2 балла) Язык нетерминальных и терминальных символов (в форме регулярных выражений)
+        \item (+1–3 балла) Описание грамматики, документацию и пример работы программы оформить в latex. Число баллов зависит от качества оформления.
+        \item (+3 балла) Параметры синтаксиса выходной грамматики также читать из (другого) файла.
+        \item (+3 балла) Язык Lua
+    \end{itemize}
+
+    \clearpage
+
+
+    \section{Входные данные}
+
+    Входные данные задаются в четырех файлах:
+    \begin{itemize}[noitemsep,topsep=0pt,parsep=0pt,partopsep=0pt]
+        \item syntaxRBNF.txt
+        \item syntaxCF.txt
+        \item regex.txt
+        \item RBNF.txt
+    \end{itemize}
+
+
+    \subsection{Синтаксис входной РБНФ грамматики}
+
+    Синтаксис входной РБНФ грамматики задается в файле "syntaxRBNF.txt".
+
+    \subsubsection*{Формат файла}
+    \begin{itemize}
+        \item В файле уже заданы названия токенов и их значения по умолчанию.
+        \item Пользователю разрешено изменять только значения токенов, которые задаются в кавычках и количество пробелов вокруг знака равенства, а также, порядок токенов.
+    \end{itemize}
+
+    \subsubsection*{Значения токенов}
+    \begin{table}[hbt!]
+        \begin{tabular}{|l|l|}
+            \hline
+            Токен & Опиание \\
+            \hline
+            nonTerminalStart = "\_" & токен начала нетерминала \\
+            nonTerminalEnd = "\_" & токен конца нетерминала \\
+            arrow = ":=" & токен, стоящий между именем нетерминала и его значением \\
+            iterStart = "\{" & токен начала итерации \\
+            iterEnd = "\}" & токен конца итерации \\
+            optionalStart = "[" & начала опционального вхождения \\
+            optionalEnd = "]" & токен конца опционального вхождения \\
+            necessaryStart = "(" & токен начала обязательного вхождения \\
+            necessaryEnd = ")" & токен конца обязательного вхождения \\
+            alternative = "$|$" & токен, разделяющий альтернативные правила \\
+            epsilon = "eps" & токен пустого слова \\
+            \hline
+        \end{tabular}
+        \caption{Файл "syntaxRBNF.txt"}
+    \end{table}
+
+    \subsubsection*{Формат токенов}
+    \begin{itemize}
+        \item Количество символов в токене должно быть от одного или больше.
+        \item Значения токенов не должны повторяться (могут повторяться только nonTerminalStart и nonTerminalEnd)
+        \item Из ASCII с 33 по 126 символы:
+        \begin{itemize}
+            \item Разрешены:   \{ \} [ ] ( ) / | \ ! ? " ' ` , . : ; \_ ~ < = > \& \# @ 0-9 A-Z a-z
+            \item Запрещены:  \% \$ \^{} $\ast$ + -
+        \end{itemize}
+    \end{itemize}
+
+
+    \subsection{Синтаксис выходной КС грамматики}
+
+    Синтаксис выходной грамматики задается в файле "syntaxCF.txt".
+
+    \subsubsection*{Формат файла}
+    \begin{itemize}
+        \item В файле уже заданы названия токенов и их значения по умолчанию.
+        \item Пользователю разрешено изменять только значения токенов, которые задаются в кавычках и количество пробелов вокруг знака равенства, а также, порядок токенов.
+    \end{itemize}
+
+    \subsubsection*{Значения токенов}
+    \begin{table}[hbt!]
+        \begin{tabular}{|l|l|}
+            \hline
+            Токен & Опиание \\
+            \hline
+            nonTerminalStart = "[" & токен начала нетерминала \\
+            nonTerminalEnd = "]" & токен конца нетерминала \\
+            arrow = "->" & токен, стоящий между именем нетерминала и его значением \\
+            alternative = "$|$" & токен, разделяющий альтернативные правила \\
+            epsilon = "\$" & токен пустого слова \\
+            \hline
+        \end{tabular}
+        \caption{Файл "syntaxCF.txt"}
+    \end{table}
+
+    \subsubsection*{Формат токенов}
+    \begin{itemize}
+        \item Количество символов в токене должно быть от одного или больше.
+        \item Значения токенов могут повторяться.
+        \item Из ASCII с 33 по 126 символы:
+        \begin{itemize}
+            \item Разрешены:   \{ \} [ ] ( ) / | \ ! ? " ' ` , . : ; \_ ~ < = > \& \# @ 0-9 A-Z a-z\\ \$ \^{} $\ast$ + -
+            \item Запрещены:  \%
+        \end{itemize}
+    \end{itemize}
+
+    \clearpage
+
+
+    \subsection{Ввод регулярного выражения}
+
+    Регулярное выражение задается в файле "syntaxCF.txt".
+
+    \subsubsection*{Формат файла}
+    \begin{itemize}
+        \item В файле уже заданы названия токенов и их значения по умолчанию.
+        \item Пользователю разрешено изменять только значения токенов, которые задаются в кавычках и количество пробелов вокруг знака равенства, а также
+        \item Порядок токенов изменять нельзя.
+    \end{itemize}
+
+    \subsubsection*{Значения токенов}
+    \begin{table}[hbt!]
+        \centering
+        \begin{tabular}{|l|l|}
+            \hline
+            Токен & Опиание \\
+            \hline
+            Nonterminal ::= [A-Z|0|1][A-z]* & Регуляргое выражение для нетерминалов\\
+            Terminal ::= [a-z]* & Регуляргое выражение для терминалов\\
+            \hline
+        \end{tabular}
+        \caption{Файл "regex.txt"}
+    \end{table}
+
+    \subsubsection*{Формат токенов}
+    \begin{itemize}
+        \item Классические регулярные выражения.
+        \item Могут быть одинаковыми для нетерминалов и терминалов.
+    \end{itemize}
+
+    %\clearpage
+
+
+    \hfill
+    \subsection{Ввод РБНФ грамматики}
+
+    РБНФ грамматика задается в файле "syntaxCF.txt".
+
+    \subsubsection*{Формат файла}
+    \begin{itemize}
+        \item Пользователь должен ввести РБНФ грамматику в соответствии с синтаксисом и терминалы, нетерминалы в ней, удовлетворяющие регулярным выражениям.
+    \end{itemize}
+
+    \subsubsection*{Пример РБНФ грамматики}
+    \begin{lstlisting}
+    _DightNotNull_ := 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8  | 9
+    _Dight_        := 0 | _DightNotNull_
+    _Natural_      := (_DightNotNull_) {_Dight_}
+    _Int_          := 0 | [minus] _Natural_
+    \end{lstlisting}
+
+    \clearpage
+
+
+    \section{Выходные данные}
+
+    \subsection{Возможные ошибки}
+
+    Если входные данные неверны, то программа выведет ошибку.
+
+    \subsubsection*{Варианты ошибок}
+    \begin{itemize}
+        \item 'Error (syntax): Not right arrow: \_A\_ :=== \_A\_b'
+        \item 'Error (syntax): ] <- not found in : (\_DightNotNull\_)[\_Dight\_'
+        \item 'Error (syntax): Not equal number of \{ and \}   in: (\_DightNotNull\_)\{\_Dight\_\}\}'
+        \item 'Error (syntax): No expression in brackets'
+        \item 'Error (regex): '\#a' <- Left nonterm doesn't match to it's regex'
+        \item 'Error (regex): '\#b' <- Right nonterm doesn't match to it's regex'
+        \item ‘Error (regex): 'A' <- Term doesn't match to it's regex’
+        \item 'Error (regex): 'B' <- Term doesn't match to it's regex'
+    \end{itemize}
+
+    \subsection{Вывод при верных данных}
+
+    Если входные данные верны, программа выведет этапы работы парсера, где можно увидеть процесс замены вхождений на новые нетерминалы, и после этого - КС грамматику.
+
+    \clearpage
+
+
+    \subsubsection*{\large Простой пример}
+    Синтаксис РБНФ и КС грамматик, а также, регулярные выражения заданы по умолчанию.
+
+    \hfill \\
+    {\bfseries RBNF.txt:}
+    \begin{lstlisting}
+        _R_ := {_S_}[[_S_](_S_)]
+    \end{lstlisting}
+
+    \hfill \\  % - перенос строки
+    \noindent{\bfseries Результет работы программы:}
+    \begin{lstlisting}
+    Parser:
+        _R_ := {_S_}[[_S_](_S_)]
+
+            {_S_}[[_S_](_S_)]     change: {_S_} -> _Nt1_
+            _Nt1_[[_S_](_S_)]
+
+            _Nt1_[[_S_](_S_)]     change: [_S_] -> _Nt2_
+            _Nt1_[_Nt2_(_S_)]
+
+            _Nt1_[_Nt2_(_S_)]     change: (_S_) -> _S_
+            _Nt1_[_Nt2__S_]
+
+            _Nt1_[_Nt2__S_]     change: [_Nt2__S_] -> _Nt3_
+            _Nt1__Nt3_
+
+
+    CF grammar:
+        [Nt1] -> [S][Nt1] | $
+        [Nt2] -> [S] | $
+        [Nt3] -> [Nt2][S] | $
+        [R] -> [Nt1][Nt3]
+    \end{lstlisting}
+
+    \clearpage
+
+
+    \subsubsection*{\large Пример "Integer"}
+    Синтаксис РБНФ и КС грамматик, а также, регулярные выражения заданы по умолчанию.
+
+    \hfill \\
+    {\bfseries RBNF.txt:}
+    \begin{lstlisting}
+        _DightNotNull_ := 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8  | 9
+        _Dight_        := 0 | _DightNotNull_
+        _Natural_      := (_DightNotNull_) {_Dight_}
+        _Int_          := 0 | [minus] _Natural_
+    \end{lstlisting}
+
+    \hfill \\
+    \noindent{\bfseries Результет работы программы:}
+    \begin{lstlisting}
+    Parser:
+        _DightNotNull_ := 1|2|3|4|5|6|7|8|9
+
+        _Dight_ := 0|_DightNotNull_
+
+        _Natural_ := (_DightNotNull_){_Dight_}
+
+            (_DightNot0_){_Dight_}    change: {_Dight_} -> _Nt1_
+            (_DightNot0_)_Nt1_
+
+            (_DightNot0_)_Nt1_   change: (_DightNot0_) -> _DightNot0_
+            _DightNot0__Nt1_
+
+        _Int_ := 0|[minus]_Natural_
+
+            0|[minus]_Natural_    change: [minus] -> _Nt2_
+            0|_Nt2__Natural_
+
+    CF grammar:
+        [DightNot0] -> 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+        [Dight] -> 0 | [DightNot0]
+        [Nt1] -> [Dight][Nt1] | $
+        [Natural] -> [DightNot0][Nt1]
+        [Nt2] -> minus | $
+        [Int] -> 0 | [Nt2][Natural]
+    \end{lstlisting}
+
+    \clearpage
+
+
+    \subsubsection*{\large Пример грамматики с очень нестандартным синтаксисом}
+    Синтаксис РБНФ и КС грамматик, а также, регулярные выражения заданы по умолчанию.
+
+    \hfill \\
+    {\bfseries syntaxRBNF.txt:}
+    \begin{lstlisting}
+        nonTerminalStart = "<"
+        nonTerminalEnd = ">"
+        arrow = ":===="
+        iterStart = "IS"
+        iterEnd = "IE"
+        optionalStart = "OS"
+        optionalEnd = "OE"
+        necessaryStart = "NS"
+        necessaryEnd = "NE"
+        alternative = "|||"
+        epsilon = "eps"
+    \end{lstlisting}
+
+    \hfill \\
+    {\bfseries syntaxCF.txt:}
+    \begin{lstlisting}
+        nonTerminalStart = "-+"
+        nonTerminalEnd = "+-"
+        arrow = "->^"
+        alternative = "*"
+        epsilon = "$"
+    \end{lstlisting}
+
+    \hfill \\
+    {\bfseries regex.txt:}
+    \begin{lstlisting}
+        Nonterminal ::= [A-Z|0|1][A-z]*
+        Terminal ::= [a-z]*
+    \end{lstlisting}
+
+    \hfill \\
+    {\bfseries RBNF.txt:}
+    \begin{lstlisting}
+        <R> :==== OS<S>OEIS<S>IENS<S>NE ||| eps
+        <Q> :==== NS<X>NENSaNEb
+    \end{lstlisting}
+
+    \hfill \\
+    \noindent{\bfseries Результет работы программы:}
+    \begin{lstlisting}
+    Parser:
+        <R> := OS<S>OEIS<S>IENS<S>NE|||eps
+
+            OS<S>OEIS<S>IENS<S>NE|||eps     change: IS<S>IE -> <Nt1>
+            OS<S>OE<Nt1>NS<S>NE|||eps
+
+            OS<S>OE<Nt1>NS<S>NE|||eps     change: OS<S>OE -> <Nt2>
+            <Nt2><Nt1>NS<S>NE|||eps
+
+            <Nt2><Nt1>NS<S>NE|||eps     change: NS<S>NE -> <S>
+            <Nt2><Nt1><S>|||eps
+
+        <Q> := NS<X>NENSaNEb
+
+            NS<X>NENSaNEb     change: NS<X>NE -> <X>
+            <X>NSaNEb
+
+            <X>NSaNEb     change: NSaNE -> a
+            <X>ab
+
+
+    CF grammar:
+        -+Nt1+- ->^ -+S+--+Nt1+- * $
+        -+Nt2+- ->^ -+S+- * $
+        -+R+- ->^ -+Nt2+--+Nt1+--+S+- * $
+        -+Q+- ->^ -+X+-ab
+
+    \end{lstlisting}
+
+    \clearpage
+
+
+    \section{Запуск программы}
+
+    Все входные данные находятся в папке "/input":
+    \begin{lstlisting}
+        /input/syntaxRBNF.txt
+        /input/syntaxCF.txt
+        /input/regex.txt
+        /input/RBNF.txt
+    \end{lstlisting}
+
+    \hfill \\
+    Программа находится в файле "/lua/main.lua"\\
+    \hfill \\
+    Запуск прграммы осуществяется окмандой:
+    \begin{lstlisting}
+        lua54 main.lua
+    \end{lstlisting}
+
+\end{document}
