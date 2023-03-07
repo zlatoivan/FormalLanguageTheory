@@ -265,9 +265,9 @@
     \hfill \\
     {\bfseries RBNF.txt:}
     \begin{lstlisting}
-        _DightNotNull_ := 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8  | 9
-        _Dight_        := 0 | _DightNotNull_
-        _Natural_      := (_DightNotNull_) {_Dight_}
+        _DightNot0_ := 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8  | 9
+        _Dight_        := 0 | _DightNot0_
+        _Natural_      := (_DightNot0_) {_Dight_}
         _Int_          := 0 | [minus] _Natural_
     \end{lstlisting}
 
@@ -275,11 +275,11 @@
     \noindent{\bfseries Результет работы программы:}
     \begin{lstlisting}
     Parser:
-        _DightNotNull_ := 1|2|3|4|5|6|7|8|9
+        _DightNot0_ := 1|2|3|4|5|6|7|8|9
 
-        _Dight_ := 0|_DightNotNull_
+        _Dight_ := 0|_DightNot0_
 
-        _Natural_ := (_DightNotNull_){_Dight_}
+        _Natural_ := (_DightNot0_){_Dight_}
 
             (_DightNot0_){_Dight_}    change: {_Dight_} -> _Nt1_
             (_DightNot0_)_Nt1_
