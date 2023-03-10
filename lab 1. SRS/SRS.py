@@ -52,8 +52,8 @@ def parse_left_trs(t, i):
     head = ""
     while i < len(t) and t[i] != '=':
         if t[i] == '(':
-            out.value = head
             out.func = 1
+            out.value = head
             out.child, i = parse_left_trs(t, i + 1)
             return out, i + 1
         if t[i] == ')':
@@ -61,10 +61,11 @@ def parse_left_trs(t, i):
                 print("Синтаксическая ошибка в TRS: x - не самый вложенный элемент")
                 exit()
             return out, i
+        print('HEAD = ', head, '->', head + t[i])
         head += t[i]
         i += 1
     if i == len(t):
-        print("Синтаксическая ошибка в TRS: в выражении отсутствует правая часть")
+        print("Синтаксическая ошибка в TRS: в выражении отсутствует левая часть")
         exit()
     return out, i
 
@@ -92,7 +93,17 @@ def parse_right_trs(t, i):
 def parse_trs(trs):
     out = []
     for t in trs:
+        print('---------------------------------------')
+        print(t)
         left, i = parse_left_trs(t, 0)
+        print(
+            'func = ', left.func, '\n' +
+            'value = ', left.value, '\n',
+            '\tchild = ', left.child.func, '\n',
+            '\tchild = ', left.child.value, '\n',
+            '\t\tchild = ', left.child.child.func, '\n',
+            '\t\tchild = ', left.child.child.value, '\n\n',
+        )
         if t[i] != '=':
             print("Синтаксическая ошибка в TRS: в выражении отсутствует =")
             exit()
@@ -192,18 +203,14 @@ def compare(left, right):
         return False
     return True
 
+# заменяет название функции на ее содержимое
 def get_parts(value, inter):
     for i in inter:
         if i.head == value:
             return i.expr.exp
     return []
 
-def get_inter(head, inter):
-    for t in inter:
-        if t.head == head:
-            return t.expr.sign, t.expr.power, t.expr.coeff
-    return None, None, None
-
+# складывает подобные слагаемые
 def append_Num(psign, pcoeff, ncoeff, npower, out):
     for o in out:
         if o.power == npower:
@@ -212,8 +219,9 @@ def append_Num(psign, pcoeff, ncoeff, npower, out):
     out.append(Num(psign * pcoeff * ncoeff, npower))
     return out
 
+# вспомогат.; раскрывает скобки по правилу (a+b)^2 = aa+ab+ba+bb
 def up_Num(pcoeff, ppower, ncoeff, npower, out):
-    #print("(", pcoeff, "* x ^", ppower, ") * (", ncoeff, "* x ^", npower, ")")
+    print("(", pcoeff, "* x ^", ppower, ") * (", ncoeff, "* x ^", npower, ")")
     for o in out:
         if o.power == ppower + npower:
             o.coeff += pcoeff * ncoeff
@@ -221,25 +229,52 @@ def up_Num(pcoeff, ppower, ncoeff, npower, out):
     out.append(Num(pcoeff * ncoeff, ppower + npower))
     return out
 
+# возводит скобку в степень
 def powerup(child, up, power):
     out = []
     if power > 1:
         for n in child:
+            # print('NNN = ', n)
             for nn in up:
                 out = up_Num(n.coeff, n.power, nn.coeff, nn.power, out)
         return powerup(child, out, power - 1)
     return up
 
+
 def calc(side, inter):
+    print('-----------------------------------------------')
     if side.child is not None:
+        print(side.value, ' (side.value)')
+
         parts = get_parts(side.value, inter)
+        # print('parts:')
+        # for p in parts:
+        #     print('\tcoeff = ', p.coeff, 'sign = ', p.sign, 'power = ', p.power)
+
         child = calc(side.child, inter)
+        # print(side.child.value, ' (side.child.value)')
+        # print('calc:')
+        # for c in child:
+        #     print('\tcoeff = ', c.coeff, 'power = ', c.power)
+
         out = []
         for p in parts:
+            # print('\n***** for parts ***********')
             nchild = powerup(child, child, p.power)
+            print('nchild:')
+            for c in nchild:
+                print('\tcoeff = ', c.coeff, 'power = ', c.power)
+
             for n in nchild:
                 out = append_Num(p.sign, p.coeff, n.coeff, n.power, out)
+            print('out:')
+            for o in out:
+                print('\tcoeff = ', o.coeff, 'power = ', o.power)
+
+        # print('#################\n')
+        print('-------- new calc ---------------------\n')
         return out
+    print('-------calc = 1,1 ----------------------\n')
     return [Num(1, 1)]
 
 problems = 0
@@ -249,3 +284,6 @@ for t in trs:
         problems += 1
 if problems == 0:
     print("Все правила убывают")
+
+print('\n\n\n')
+calc(trs[0].left, inter)
