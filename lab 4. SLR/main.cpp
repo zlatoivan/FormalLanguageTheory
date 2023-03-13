@@ -165,12 +165,14 @@ vector<Rule> formalize_roots(vector<Rule> roots) {
 }
 
 bool same_roots(vector<Rule> roots, vector<Rule> state) {
+    int yes = 0;
     for (Rule r : roots) {
         for (Rule s : state) {
-            if (rule_to_string(r) != rule_to_string(s)) return false;
+            if (rule_to_string(r) == rule_to_string(s)) yes++;
         }
     }
-    return true;
+    if (yes == size(roots) && yes == size(state)) return true;
+    return false;
 }
 
 bool in_body(Rule_body b, vector<Rule_body> bodies) {
